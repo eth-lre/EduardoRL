@@ -1,7 +1,8 @@
 # The Assistance Dilemma: Learning to Teach via Multi-Turn RL (EduardoRL)
 
 Code, data and evaluation for *The Assistance Dilemma: Learning to Teach via
-Multi-Turn Reinforcement Learning*.
+Multi-Turn Reinforcement Learning*
+([arXiv:2610.06446](https://arxiv.org/abs/2610.06446)).
 
 Eduardo tutors are trained with multi-turn RL (DPPO, on top of
 [veRL](https://github.com/volcengine/verl)). The student is a frozen
@@ -184,7 +185,9 @@ code. To serve a trained tutor as an OpenAI-compatible endpoint, run
 @article{macina2026assistance,
   title   = {The Assistance Dilemma: Learning to Teach via Multi-Turn Reinforcement Learning},
   author  = {Macina, Jakub and Kapur, Manu and Sachan, Mrinmaya},
-  year    = {2026}
+  journal = {arXiv preprint arXiv:2610.06446},
+  year    = {2026},
+  url     = {https://arxiv.org/abs/2610.06446}
 }
 ```
 
