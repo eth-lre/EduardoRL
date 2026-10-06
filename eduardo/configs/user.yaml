@@ -1,0 +1,173 @@
+# The paper recipe: paths, data, rollout, reward and serving settings.
+# Composed on top of veRL's ppo_trainer via eduardo_base's defaults list.
+#
+# Required env vars: USER, SERVING_API_KEY, WORK_DIR, EDUARDO_RECIPE_DIR, EXPERIMENT
+# Optional env vars: MODEL_PATH (teacher/policy model), WANDB_ENTITY
+defaults:
+  - _self_
+
+vars:
+  work_dir: ${oc.env:WORK_DIR}
+  recipe_dir: ${oc.env:EDUARDO_RECIPE_DIR}
+  student_model_name: Llama-3.1-8B-Instruct-${oc.env:USER}
+  judge_model_name: Qwen3.6-27B-${oc.env:USER}
+
+data:
+  train_files: ${vars.work_dir}/data/eduardo/train.parquet
+  val_files: ${vars.work_dir}/data/eduardo/val.parquet
+  train_batch_size: 16                # must be >= ppo_mini_batch_size
+  max_prompt_length: 2048
+  max_response_length: 8192           # whole-conversation budget (teacher turns incl. <think>, plus student turns)
+  shuffle: True
+  filter_overlong_prompts: True
+  trust_remote_code: True
+  return_raw_chat: True
+  apply_chat_template_kwargs:
+    # Teacher thinking enabled at render time: each teacher turn opens with
+    # <think>…</think>, which is stripped before the student and judge see it.
+    enable_thinking: True
+
+actor_rollout_ref:
+  model:
+    # Teacher (policy) model; override via MODEL_PATH or a Hydra CLI arg.
+    path: ${oc.env:MODEL_PATH,Qwen/Qwen3.6-27B}
+    trust_remote_code: True
+    enable_gradient_checkpointing: true
+  rollout:
+    name: vllm
+    mode: async                       # multi-turn AgentLoop requires async
+    checkpoint_engine:
+      update_weights_bucket_megabytes: 6144
+    gpu_memory_utilization: 0.58
+    tensor_model_parallel_size: 2
+    prompt_length: ${data.max_prompt_length}
+    response_length: ${data.max_response_length}
+    max_num_batched_tokens: ${max_model_len}
+    max_model_len: ${max_model_len}
+    free_cache_engine: true
+    temperature: 1.15
+    calculate_log_probs: True
+    log_prob_micro_batch_size_per_gpu: 1   # required when calculate_log_probs=True and use_dynamic_bsz=False
+    engine_kwargs:
+      vllm: {}
+    val_kwargs:
+      top_p: 0.95
+      temperature: 0.6
+      n: 1
+      do_sample: True
+    multi_turn:
+      enable: true
+      format: hermes
+      # Dialog length is bounded by max_user_turns: 1 static opener + 10 student + 11 teacher turns.
+      max_user_turns: 10
+      max_assistant_turns: 16
+      num_repeat_rollouts: 1
+      tokenization_sanity_check_mode: strict
+      interaction_config_path: ${vars.recipe_dir}/eduardo_interaction_config.yaml
+    agent:
+      # EduardoAgentLoop persists the structured message list so the reward
+      # function sees the full transcript.
+      agent_loop_config_path: ${vars.recipe_dir}/eduardo_agent_loop_config.yaml
+  actor:
+    strategy: fsdp
+    ppo_micro_batch_size_per_gpu: 1
+    ppo_max_token_len_per_gpu: ${max_model_len}
+    fsdp_config:
+      param_offload: false
+      optimizer_offload: true
+    optim:
+      lr: 1e-6
+      betas: [0.9, 0.95]
+      # `eps` is passed through to torch.optim.AdamW via override_optimizer_config.
+      override_optimizer_config:
+        eps: 1e-15
+  ref:
+    log_prob_micro_batch_size_per_gpu: 1
+    fsdp_config:
+      param_offload: true
+
+
+reward_model:
+  enable: false
+  reward_manager: naive
+
+custom_reward_function:
+  # `pkg://` imports the module as part of the `eduardo` package so its
+  # relative imports resolve (requires `${EDUARDO_RECIPE_DIR}/..` on PYTHONPATH).
+  path: pkg://eduardo.reward_function
+  name: eduardo_reward_func
+  reward_kwargs:
+    # Run identity recorded in every conversations_*.jsonl row.
+    run_name: ${trainer.experiment_name}
+    model_path: ${actor_rollout_ref.model.path}
+    judge_api_base: ${oc.env:JUDGE_API_BASE}
+    judge_api_key_env: SERVING_API_KEY
+    judge_model: ${vars.judge_model_name}
+    judge_temperature: 0.6
+    # Must match render-time thinking so teacher turns are parsed consistently.
+    enable_thinking: ${data.apply_chat_template_kwargs.enable_thinking}
+    # Soft additive penalty for judge-rejected rollouts.
+    judge_penalty: 0.75
+    # true: rejected rollouts earn no Δ_solve credit or bonuses (hard gate);
+    # false: only the additive judge_penalty applies.
+    judge_hard_gate: true
+    # Extra cost paid only by gated rollouts; unlike judge_penalty it survives
+    # GRPO mean-centering, so a caught leak ranks below an honest failure.
+    gate_penalty: 0.2
+    eoc_bonus: 0.0
+    judge_max_tokens: 4096
+    # Each criterion is majority-voted: REJECT if more than half the votes reject.
+    judge_votes: 3
+    # Periodic-eval judge: scores validation rollouts (never used in the reward)
+    # on pedagogy and correctness with the offline benchmark rubrics.
+    # Set eval_judge_model to "" to disable.
+    eval_judge_model: gemini-3.1-pro-preview
+    eval_judge_api_base: https://generativelanguage.googleapis.com/v1beta/openai/
+    eval_judge_api_key_env: GEMINI_API_KEY
+    eval_judge_reasoning_effort: high
+    eval_judge_temperature: 0.3
+    # Judge thinking counts against this budget; too low truncates the verdict.
+    eval_judge_max_tokens: 16384
+    eval_judge_concurrency: 16
+    student_api_base: ${oc.env:STUDENT_API_BASE}
+    student_api_key_env: SERVING_API_KEY
+    student_model: ${vars.student_model_name}
+    student_temperature: 0.6
+    num_student_attempts: 16
+    # Grade the final attempt on the near-transfer problem.
+    test_on_transfer: true
+    # Replace teacher utterances with "(hidden)" in the graded final attempt,
+    # so the teacher scores only through what the student wrote itself.
+    # Judges, metrics and saved transcripts always see the full conversation.
+    omit_teacher_turns: true
+    # Visible-token budget T0 per teacher turn; positive Δ_solve is scaled by
+    # 1/(1 + ((t−T0)/T0)^2) for turns exceeding it.
+    max_tokens_per_turn: 150
+    # Thinking-token budget per teacher turn, with the same decay. The per-turn
+    # vLLM hard cap is max_tokens_per_turn + max_thinking_tokens_per_turn.
+    max_thinking_tokens_per_turn: 512
+    # Reward for well-formed thinking: think_reward · (correct-thinking turns / teacher turns).
+    think_reward: 0.0
+    num_retries: 3
+    backoff_base: 2.0
+    backoff_cap: 30.0
+    jitter: true
+    # Per-process caps on concurrent endpoint calls, sized to the serving
+    # slot budget (peak load ≈ num_reward_workers × concurrency).
+    student_concurrency: 256.
+    judge_concurrency: 128.
+
+trainer:
+  project_name: eduardo
+  group_name: ${oc.env:EXPERIMENT}
+  experiment_name: ${oc.env:EXPERIMENT}
+  n_gpus_per_node: 4
+  # save_freq / test_freq are counted in training steps, not epochs.
+  save_freq: 25
+  test_freq: 25
+  val_before_train: false
+  logger: ["console", "wandb"]
+  max_actor_ckpt_to_keep: 5
+  critic_warmup: 0
+  seed: 42
+  default_local_dir: ${vars.work_dir}/verl_ckpts/${trainer.experiment_name}

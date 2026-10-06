@@ -1,0 +1,4 @@
+# Agent-loop registry, loaded via actor_rollout_ref.rollout.agent.agent_loop_config_path.
+# `_target_` is resolved lazily by Ray workers, so no pre-import is needed.
+- name: eduardo_agent
+  _target_: eduardo.eduardo_agent_loop.EduardoAgentLoop

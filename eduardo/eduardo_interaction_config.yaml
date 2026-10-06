@@ -1,0 +1,19 @@
+# Rollout interaction config, loaded via actor_rollout_ref.rollout.multi_turn.interaction_config_path.
+interaction:
+  - name: "eduardo"
+    class_name: "eduardo.eduardo_interaction.EduardoInteraction"
+    config:
+      student_api_base: "${oc.env:STUDENT_API_BASE}"
+      student_api_key_env: "SERVING_API_KEY"
+      student_model: "Llama-3.1-8B-Instruct-${oc.env:USER}"
+      # Teacher turns required before <end_of_conversation> is honoured
+      # (0 = no minimum). Must stay below rollout.multi_turn.max_assistant_turns.
+      min_teacher_turns_before_eoc: 3
+      temperature: 0.6       # student sampling temperature
+      max_tokens: 500        # student max tokens per turn
+      num_retries: 3
+      backoff_base: 2.0
+      backoff_cap: 30.0
+      jitter: true
+      # Per-process cap shared with reward_function.py's student calls.
+      student_concurrency: 256

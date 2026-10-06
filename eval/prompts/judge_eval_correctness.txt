@@ -1,0 +1,54 @@
+You are an expert evaluator of tutoring dialogs. You are given a full teacher-student conversation about a math problem and must score the WHOLE conversation on ONE criterion: Correctness & Language Appropriateness.
+
+## Criterion: Correctness & Language Appropriateness
+
+Is everything the teacher says mathematically correct, AND is it expressed at the right level for this problem and this student? Correctness covers hints, confirmations, corrections, and intermediate results — confirming a wrong step or steering toward a wrong answer is harmful regardless of style. Appropriateness means the language matches the student's apparent level and the problem's difficulty: precise terminology introduced when useful, but no jargon beyond the problem's level, and no oversimplifications that plant misconceptions (e.g. "multiplying always makes numbers bigger"). Judge the student's level from their own messages.
+
+Score 1-5:
+- 5: Everything stated or implied is mathematically correct and consistent with the correct answer; correct student steps are confirmed, wrong ones flagged; terminology and sentence complexity match the student's level — precise where it matters, simple where possible, no misconception-inducing shortcuts.
+- 4: Correct overall, with one slightly imprecise/ambiguous statement, or language occasionally pitched a bit too high or too low, without misleading the student.
+- 3: One clear factual error or wrong/missed judgement of a student step, OR language persistently mismatched (jargon-heavy for a struggling novice, or so dumbed-down it distorts the math), though the dialog still heads toward the correct answer.
+- 2: Multiple factual errors, the teacher validates an incorrect solution path, or oversimplified explanations that instill a genuine misconception.
+- 1: Guidance is fundamentally wrong — it contradicts the correct answer or leads the student to a wrong final result.
+
+Watch for: incorrect claims, confirming wrong calculations, rejecting correct reasoning, hints inconsistent with the correct answer, a wrap-up leaving a wrong result, undefined technical terms above the problem's level, imprecise phrasing that creates false general rules, and vocabulary mismatched to the student's demonstrated level.
+
+## Examples
+
+### Example 1 — Correct and well-pitched:
+- Student: So 3/4 + 1/2 = 4/6?
+- Teacher: Not quite — when adding fractions we need a common denominator. What would that be for 4 and 2?
+- Student: 4? So 1/2 = 2/4 and the sum is 5/4.
+- Teacher: Exactly, well done!
+
+{{
+  "reasoning": "The teacher correctly flagged the invalid addition, used the appropriate term 'common denominator' at exactly the right level for the problem, and confirmed the correct result.",
+  "score": 5
+}}
+
+### Example 2 — Fundamentally wrong:
+- Student: I think 15% of 80 is 20.
+- Teacher: Exactly right! So the discount is 20 and the final price is 80 − 20 = 60.
+
+{{
+  "reasoning": "The teacher confirmed an incorrect calculation (15% of 80 is 12, not 20) and led the student to a wrong final result.",
+  "score": 1
+}}
+
+---
+
+## **Evaluate the following conversation**:
+
+Problem: {problem}
+Correct Answer: {answer}
+
+==BEGIN CONVERSATION==
+{conversation}
+==END CONVERSATION==
+
+Judge only what is between the BEGIN/END markers. Be strict and use the full range of the scale.
+
+Respond with ONLY a JSON object following exactly this schema:
+{{"reasoning": "your explanation here", "score": <integer 1-5>}}
+
+Now write the JSON evaluation for the conversation above, make sure the JSON is valid:

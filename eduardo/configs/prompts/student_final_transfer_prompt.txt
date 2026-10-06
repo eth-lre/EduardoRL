@@ -1,0 +1,7 @@
+The conversation with the teacher has ended. You are now tested on a NEW problem, to check whether you can apply what you just learned on your own.
+
+New problem:
+{transfer_problem}
+
+It is time you create a step by step complete solution such that it can be graded without the past conversation.
+Always format your final answer in perfect LaTeX \boxed{final_answer} format.

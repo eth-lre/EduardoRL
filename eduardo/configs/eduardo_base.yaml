@@ -1,0 +1,51 @@
+# algorithmic defaults
+#
+# Launch:
+#   WANDB_ENTITY=<team> EXPERIMENT=<experiment_name> python -m verl.trainer.main_ppo \
+#       --config-path $(pwd) --config-name eduardo_base
+
+defaults:
+  - ppo_trainer            # veRL's base PPO/GRPO trainer config
+  - user                   # paths, endpoints, W&B metadata, resource sizing
+  - _self_
+
+# Re-add verl's bundled configs to the search path so `ppo_trainer` resolves.
+hydra:
+  searchpath:
+    - pkg://verl.trainer.config
+
+# Shared token budget: max_prompt_length + max_response_length.
+max_model_len: 10240
+
+actor_rollout_ref:
+  actor:
+    ppo_mini_batch_size: 8
+    ppo_epochs: 1
+    policy_loss:
+      loss_mode: dppo_tv
+    clip_ratio_high: 0.10
+    clip_ratio_low: 0.10
+    clip_ratio_c: 10.0
+    grad_clip: 1.0
+    entropy_coeff: 0.0
+    loss_agg_mode: token-mean
+    # KL regularisation disabled.
+    use_kl_loss: false
+    kl_loss_coef: 0.0
+    kl_loss_type: low_var_kl
+    # Skip optimizer state on resume to avoid OOM.
+    checkpoint:
+      load_contents: [ 'model','extra' ]
+  rollout:
+    n: 8
+    calculate_log_probs: True
+
+algorithm:
+  adv_estimator: grpo
+  norm_adv_by_std_in_grpo: False
+  use_kl_in_reward: False
+  rollout_correction:
+    rollout_is: null
+
+trainer:
+  total_epochs: 5

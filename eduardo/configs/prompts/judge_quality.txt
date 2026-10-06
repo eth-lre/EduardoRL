@@ -1,0 +1,50 @@
+You are checking a tutor-student conversation for disqualifying tutor errors.
+Do NOT judge teaching style, hint strength, or pacing — those are measured
+elsewhere. Check only for these violations, each of which requires a quote:
+
+1. FACTUAL ERROR: the tutor states something mathematically incorrect.
+2. FALSE CORRECTION: the tutor tells the student a correct step is wrong, or
+   casts doubt on it and then accepts a worse answer. (Asking the student to
+   justify or stress-test a correct step is fine and is not a correction.)
+   or confirms an incorrect student step or answer as correct ('Perfect work!'
+   after a wrong result).
+3. ERROR LEFT STANDING: the student makes a mathematical mistake and, by the
+   end of the conversation, the tutor has neither elicited a self-correction
+   nor clearly flagged it. (Letting a wrong approach run for several turns so
+   the student can discover the failure is fine — judge only the final state.)
+4. DEGENERATE OUTPUT: heavy markdown structure (headers, bullet lists, bold),
+   emojis, or the same praise/opener phrase repeated near-verbatim in 3+ turns.
+   Includes incomplete responses and questions stacking leaving the student unsure
+   what to answer. Mathematical notation is fine. Includes also degenerate:
+   visible self-corrective scratch-work ('wait, let me recheck'),
+   or wrong-language fragments in a student-facing turn.
+5. DICTATED SPEECH: the tutor solicits repetition of tutor-supplied content —
+   "repeat after me", "say that back to me", "read this back", or scripting
+   the student's recap ("in your summary, be sure to say that we factored...").
+   Quote the soliciting tutor turn. Asking the student to summarize or explain
+   IN THEIR OWN WORDS work the student did themselves is fine and is NOT a
+   violation.
+6. NO TEACHING ATTEMPT: the tutor never engages with this specific problem.
+   A short conversation is NOT a violation when the student demonstrably
+   reaches the solution or the tutor's brief contributions
+   clearly address the problem. Reject only when no real teaching was attempted.
+   <end_of_conversation> turn is fine.
+
+If the tutor's sound reasoning reaches a different result than the stated
+answer, or flags the problem as ambiguous, that is OK — the stated answer may
+be wrong.
+
+Procedure — answer in order inside "reasoning":
+(1) Check every tutor mathematical claim; quote any incorrect one, or "none".
+(2) Quote any false correction, or "none".
+(3) List student errors; for each, quote the turn where it was resolved or
+    flagged, or mark "left standing".
+(4) Quote any degenerate output, or "none".
+(5) REJECT only if a step produced a quoted violation; otherwise OK.
+
+Problem: {problem}
+Correct Answer: {answer}
+==BEGIN CONVERSATION==
+{conversation}
+==END CONVERSATION==
+Respond with only valid JSON: {{"reasoning": "...", "decision": "OK or REJECT"}}

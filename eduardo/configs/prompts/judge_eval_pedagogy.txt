@@ -1,0 +1,65 @@
+## Criterion: Pedagogy
+
+Good tutoring uses CONTINGENT SCAFFOLDING: help is calibrated to the student's demonstrated need (minimal hint first, escalating only if the student remains stuck) and FADES as competence grows. It allows PRODUCTIVE STRUGGLE: the student is given room to attempt, err, and self-correct before the teacher intervenes; errors are diagnosed and turned into reasoning opportunities, not immediately fixed. It maintains RIGOR: the teacher presses for explanation and justification ("why does that work?") and avoids "funneling" — chains of trivial leading questions that do the thinking for the student. The student does the actual reasoning and most of the talking.
+
+Score 1-5:
+- 5: Excellent — support is contingent (smallest hint that unblocks, escalated only when needed) and fades over the dialog; the student is allowed to struggle and self-correct; errors are probed, not corrected outright; the teacher presses for justification; no final answer or key intermediate result is revealed before the student derives it.
+- 4: Good — mostly contingent guidance, with small lapses: an occasional hint given before the student struggled, mild funneling, a minor result confirmed slightly too early, or missed chances to press for "why".
+- 3: Mixed — some genuine guidance, but the teacher rescues too fast after errors, reveals an important intermediate step or does a key calculation, funnels the student through trivial steps, or dominates the dialog.
+- 2: Poor — the teacher reveals the final answer or walks through most of the solution after only brief guiding; corrects errors directly; lecture-style with little use of the student's responses.
+- 1: No pedagogy — the final answer or complete solution is given immediately (in any format, including \boxed{{}}), or the student's reasoning is ignored entirely.
+
+Watch for: stating the final answer or key intermediate results, performing calculations or substituting values the student did not provide, hints given before the student attempted or struggled, correcting an error instead of prompting the student to find it, funneling (questions so narrow the answer is trivial), never asking for justification, and talk-time balance (student should talk at least as much as the teacher).
+
+## Examples
+
+### Example 1 — Excellent guidance:
+- Student: How do I integrate x * e^(2x)?
+- Teacher: What technique might suit a product of functions?
+- Student: Integration by parts?
+- Teacher: Try it — what would you pick for u and dv, and why?
+- Student: u = x and dv = e^(2x) dx, since du gets simpler.
+- Teacher: Good reasoning. Carry it through and tell me what you get.
+
+{{
+  "reasoning": "Minimal contingent hints, the student attempts each step, the teacher presses for justification ('why'), fades support, and reveals nothing the student should derive.",
+  "score": 5
+}}
+
+### Example 2 — Mixed:
+- Student: I need to solve 2x + 6 = 14.
+- Teacher: Let's isolate the x-term first. What could you do to both sides?
+- Student: Subtract 6? So 2x = 8.
+- Teacher: Right, and dividing both sides by 2 gives x = 4. Can you check that in the original equation?
+
+{{
+  "reasoning": "Genuine guidance at first, but the teacher performed the final key step (x = 4) instead of letting the student derive it, cutting off productive work.",
+  "score": 3
+}}
+
+### Example 3 — No pedagogy:
+- Student: How can I compute the limit as x → 0 of sin(5x)/x?
+- Teacher: The limit is simply \boxed{{5}}.
+
+{{
+  "reasoning": "The final answer was given immediately with no student reasoning involved.",
+  "score": 1
+}}
+
+---
+
+## **Evaluate the following conversation**:
+
+Problem: {problem}
+Correct Answer: {answer}
+
+==BEGIN CONVERSATION==
+{conversation}
+==END CONVERSATION==
+
+Judge only what is between the BEGIN/END markers. Be strict and use the full range of the scale.
+
+Respond with ONLY a JSON object following exactly this schema:
+{{"reasoning": "your explanation here", "score": <integer 1-5>}}
+
+Now write the JSON evaluation for the conversation above, make sure the JSON is valid:

@@ -1,0 +1,38 @@
+You are checking a tutor-student conversation for answer leakage. Decide one
+thing only: did the tutor hand over the solution before the student produced it?
+
+An ATTEMPT = the student proposed a method, wrote a step, stated a guess, or
+described a specific dead end ("I tried factoring but got stuck"). "How do I
+do this?" or "I don't know" is NOT an attempt.
+
+REJECT only if you can quote a tutor turn that does one of these:
+1. States the final answer (in any form, including inside a question — "so we
+   get 42, right?") before a student turn contains it.
+2. Names the key method, formula, or substitution before any student attempt.
+3. Lays out the complete solution path, leaving the student only arithmetic
+   or restating.
+"Phrasing as a question does not exempt a hint: if a tutor question names,
+presupposes, or performs the key method or step ('what do you get when you factor out x?',
+'could this be a difference of squares?'), treat it exactly as if the tutor had stated it."
+
+Everything else is OK, including: guiding questions; narrowing the field
+("what tools do you know for constrained maxima?"); naming a method AFTER an
+attempt or after the student named it; demonstrating on a different analogous
+example; supplying one intermediate fact to a stuck student who has attempted;
+recapping steps the student produced; reaching a different result than the
+stated answer (it may be wrong — judge only leakage).
+
+Procedure — answer in order inside "reasoning":
+(1) Quote any tutor turn stating the final answer before the student did, or
+    write "none".
+(2) List each method/formula the tutor named; for each, quote the earlier
+    student attempt, or write "no attempt".
+(3) REJECT only if (1) or (2) produced a violation with a quote. A REJECT
+    without a quoted tutor turn is invalid.
+
+Problem: {problem}
+Correct Answer: {answer}
+==BEGIN CONVERSATION==
+{conversation}
+==END CONVERSATION==
+Respond with only valid JSON: {{"reasoning": "...", "decision": "OK or REJECT"}}
