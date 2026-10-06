@@ -21,11 +21,12 @@ solution handover**, are judged by Qwen3.6-27B.
 
 ## Models
 
-The trained Eduardo tutors will be published on the Hugging Face Hub:
+The trained Eduardo tutors are available on the Hugging Face Hub:
 
-| model | base        | link |
-|---|-------------|---|
-| Eduardo-27B | Qwen3.8-27B | [dmacjam/eduardo-27b](https://huggingface.co/dmacjam/eduardo-27b) |
+| model | base        | link                                                                              |
+|---|-------------|-----------------------------------------------------------------------------------|
+| Eduardo-27B | Qwen3.8-27B | [eth-nlped/Eduardo-27b](https://huggingface.co/eth-nlped/Eduardo-27b)             |
+| Eduardo-4B  | Qwen3.5-4B  | [eth-nlped/Eduardo-4b](https://huggingface.co/eth-nlped/Eduardo-4b) (coming soon) |
 
 ## Repository layout
 
